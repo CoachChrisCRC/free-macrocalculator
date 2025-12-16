@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Macro Calculator - Coach Chris</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* Import custom fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Oswald:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        .font-brand {
+            font-family: 'Oswald', sans-serif;
+        }
+
+        /* Input styling for the dark theme */
+        input, select {
+            background-color: #111111;
+            border: 1px solid #333333;
+            color: #ffffff;
+            padding: 0.75rem;
+            border-radius: 0.25rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #ffffff;
+        }
+
+        /* Responsive container to mimic the original modal width */
+        .calculator-container {
+            width: 100%;
+            max-width: 480px;
+            padding: 1.5rem; /* p-6 */
+        }
+
+        /* Hide the default number input arrows */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center">
+
+    <!-- Header / Branding Area -->
+    <header class="w-full calculator-container px-6 py-8 flex justify-between items-start">
+        <div class="flex flex-col select-none">
+            <h1 class="font-brand font-bold text-4xl leading-none tracking-wide text-white mb-1">COACH CHRIS</h1>
+            <h2 class="font-brand font-bold text-lg leading-none text-gray-400 mb-[2px]">CIRCULAR ROOTS COACHING</h2>
+            <h3 class="font-brand font-bold text-lg leading-none text-gray-600">TRAIN UNCNVNTNL</h3>
+        </div>
+        
+        <div class="text-white pt-1">
+            <i data-lucide="utensils" class="w-8 h-8"></i>
+        </div>
+    </header>
+
+    <!-- Main Content: Calorie & Macro Calculator -->
+    <main class="flex-grow w-full flex justify-center pb-12">
+        <div id="macro-calculator" class="calculator-container pt-8 sm:p-8">
+            <h2 class="font-brand text-4xl uppercase tracking-widest font-bold mb-4 text-center">Calorie & Macro Calculator</h2>
+            <p class="text-center text-sm text-gray-400 mb-8">
+                Calculate your estimated Total Daily Energy Expenditure (TDEE) and macro split.
+            </p>
+            
+            <!-- Input Form -->
+            <div id="macro-input-form" class="space-y-4">
+                
+                <!-- Unit System Toggle -->
+                <label class="block">
+                    <span class="text-sm font-bold block mb-1">Units</span>
+                    <select id="macro-unit-system" class="w-full" onchange="toggleMacroUnits()">
+                        <option value="metric">Metric (kg, cm)</option>
+                        <option value="imperial">Imperial (lb, ft/in)</option>
+                    </select>
+                </label>
+
+                <label class="block">
+                    <span class="text-sm font-bold block mb-1">Gender</span>
+                    <select id="macro-gender" class="w-full">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </label>
+                <div class="grid grid-cols-3 gap-3">
+                    <label class="block">
+                        <span class="text-sm font-bold block mb-1">Age</span>
+                        <input id="macro-age" type="number" min="15" max="100" placeholder="Years" class="w-full">
+                    </label>
+
+                    <!-- Height Inputs (Dynamic based on unit) -->
+                    <div id="macro-height-cm-group" class="block col-span-2">
+                        <span class="text-sm font-bold block mb-1">Height (cm)</span>
+                        <input id="macro-height-cm" type="number" min="100" max="250" placeholder="e.g., 175" class="w-full">
+                    </div>
+                    <div id="macro-height-ftin-group" class="grid grid-cols-2 gap-2 col-span-2 hidden">
+                        <div>
+                            <span class="text-sm font-bold block mb-1">Height (ft)</span>
+                            <input id="macro-height-ft" type="number" min="3" max="8" placeholder="e.g., 5" class="w-full">
+                        </div>
+                        <div>
+                            <span class="text-sm font-bold block mb-1">Height (in)</span>
+                            <input id="macro-height-in" type="number" min="0" max="11" placeholder="e.g., 9" class="w-full">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weight Input (Dynamic label) -->
+                <label class="block">
+                    <span id="macro-weight-label" class="text-sm font-bold block mb-1">Weight (kg)</span>
+                    <input id="macro-weight" type="number" min="30" max="300" placeholder="e.g., 75" class="w-full">
+                </label>
+
+                <label class="block">
+                    <span class="text-sm font-bold block mb-1">Activity Level</span>
+                    <select id="macro-activity" class="w-full">
+                        <option value="1.2">Sedentary (Little or no exercise)</option>
+                        <option value="1.375">Light (1-3 days/week)</option>
+                        <option value="1.55">Moderate (3-5 days/week)</option>
+                        <option value="1.725">High (6-7 days/week)</option>
+                        <option value="1.9">Extreme (Athlete, 2x per day)</option>
+                    </select>
+                </label>
+                
+                <button onclick="calculateMacros()" class="w-full mt-6 py-4 bg-white text-black text-xl font-bold uppercase rounded-sm hover:opacity-80 transition-opacity">
+                    Calculate Macros
+                </button>
+            </div>
+
+            <!-- Result Display -->
+            <div id="macro-result" class="mt-8 pt-6 border-t border-gray-700 space-y-6 hidden">
+                <h3 class="text-xl font-bold uppercase tracking-wider mb-4">Results Summary</h3>
+
+                <!-- TDEE Section -->
+                <div class="p-4 border border-white rounded-lg text-center">
+                    <p class="text-sm uppercase text-gray-400">Your Total Daily Energy Expenditure (TDEE)</p>
+                    <p class="text-5xl font-brand font-bold mt-1" id="tdee-display">2500</p>
+                    <p class="text-lg uppercase text-gray-400">Maintenance / Recomp Calories</p>
+                </div>
+
+                <!-- Goals Section -->
+                <div class="space-y-4">
+                    <h4 class="text-lg font-bold uppercase">Calorie Goals (300 kcal Adjustment)</h4>
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div class="bg-gray-900 p-3 rounded-lg">
+                            <p class="text-xs uppercase text-gray-500">Weight-loss / Fat-loss</p>
+                            <p class="text-2xl font-brand font-bold mt-1" id="cutting-cal">2200 kcal</p>
+                        </div>
+                        <div class="bg-gray-900 p-3 rounded-lg">
+                            <p class="text-xs uppercase text-gray-500">Muscle Gain</p>
+                            <p class="text-2xl font-brand font-bold mt-1" id="bulking-cal">2800 kcal</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Macros Section -->
+                <div class="space-y-4">
+                    <h4 class="text-lg font-bold uppercase">Macro Split (40P/30C/30F)</h4>
+                    <p class="text-sm text-gray-500 text-center">Based on Maintenance Calories</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="bg-gray-900 p-3 rounded-lg text-center">
+                            <p class="text-xs uppercase text-red-500 font-bold">Protein</p>
+                            <p class="text-2xl font-brand font-bold mt-1" id="macro-protein">183g</p>
+                        </div>
+                        <div class="bg-gray-900 p-3 rounded-lg text-center">
+                            <p class="text-xs uppercase text-blue-500 font-bold">Carbs</p>
+                            <p class="text-2xl font-brand font-bold mt-1" id="macro-carbs">187g</p>
+                        </div>
+                        <div class="bg-gray-900 p-3 rounded-lg text-center">
+                            <p class="text-xs uppercase text-green-500 font-bold">Fat</p>
+                            <p class="text-2xl font-brand font-bold mt-1" id="macro-fat">83g</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="resetMacro()" class="w-full py-3 text-sm font-bold uppercase tracking-wider opacity-60 hover:opacity-100 transition-opacity">
+                    RECALCULATE
+                </button>
+            </div>
+            <p id="macro-error" class="text-red-500 text-sm mt-4 hidden text-center">
+                Please ensure all fields are filled out with valid numbers.
+            </p>
+        </div>
+    </main>
+
+    <footer class="w-full text-center py-6 text-gray-600 text-xs">
+        <p>&copy; 2024 Circular Roots Coaching. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+        
+        // --- GLOBAL CONSTANTS ---
+        const LB_TO_KG = 0.453592;
+        const IN_TO_CM = 2.54;
+
+        const PROTEIN_CAL_PER_G = 4;
+        const CARB_CAL_PER_G = 4;
+        const FAT_CAL_PER_G = 9;
+        // 40% Protein, 30% Carbs, 30% Fat - Recommended maintenance split
+        const MACRO_SPLIT = { protein: 0.40, carbs: 0.30, fat: 0.30 }; 
+
+        // --- Calorie and Macro Calculator Logic ---
+
+        /**
+         * Toggles the visibility and labels of the height and weight input fields
+         * based on the selected unit system (Metric or Imperial).
+         */
+        function toggleMacroUnits() {
+            const unitSystem = document.getElementById('macro-unit-system').value;
+            const isImperial = unitSystem === 'imperial';
+
+            document.getElementById('macro-weight-label').textContent = isImperial ? 'Weight (lb)' : 'Weight (kg)';
+            
+            const cmGroup = document.getElementById('macro-height-cm-group');
+            const ftInGroup = document.getElementById('macro-height-ftin-group');
+
+            if (isImperial) {
+                cmGroup.classList.add('hidden');
+                ftInGroup.classList.remove('hidden');
+                // Set appropriate placeholder/range for Imperial weight
+                document.getElementById('macro-weight').min = 60; 
+                document.getElementById('macro-weight').max = 660; 
+                document.getElementById('macro-weight').placeholder = 'e.g., 165';
+            } else {
+                cmGroup.classList.remove('hidden');
+                ftInGroup.classList.add('hidden');
+                // Set appropriate placeholder/range for Metric weight
+                document.getElementById('macro-weight').min = 30; 
+                document.getElementById('macro-weight').max = 300;
+                document.getElementById('macro-weight').placeholder = 'e.g., 75';
+            }
+        }
+
+        /**
+         * Calculates Basal Metabolic Rate (BMR) using the Mifflin-St Jeor formula,
+         * then calculates Total Daily Energy Expenditure (TDEE) and macro split.
+         */
+        function calculateMacros() {
+            const unitSystem = document.getElementById('macro-unit-system').value;
+            const isImperial = unitSystem === 'imperial';
+            
+            const gender = document.getElementById('macro-gender').value;
+            const age = parseInt(document.getElementById('macro-age').value, 10);
+            const weightInput = parseFloat(document.getElementById('macro-weight').value);
+            const activityMultiplier = parseFloat(document.getElementById('macro-activity').value);
+
+            let heightCm;
+            if (isImperial) {
+                const ft = parseFloat(document.getElementById('macro-height-ft').value) || 0;
+                const inches = parseFloat(document.getElementById('macro-height-in').value) || 0;
+                // Convert feet and inches to total inches, then to cm
+                const totalInches = (ft * 12) + inches;
+                heightCm = totalInches * IN_TO_CM;
+            } else {
+                heightCm = parseFloat(document.getElementById('macro-height-cm').value);
+            }
+
+            const resultDiv = document.getElementById('macro-result');
+            const formDiv = document.getElementById('macro-input-form');
+            const errorDiv = document.getElementById('macro-error');
+
+            resultDiv.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+            
+            // Convert weight to KG for calculation (Mifflin-St Jeor formula expects KG and CM)
+            let weightKg = weightInput;
+            if (isImperial) {
+                weightKg = weightInput * LB_TO_KG;
+            }
+
+            // Simple validation
+            if (isNaN(age) || isNaN(heightCm) || isNaN(weightKg) || age <= 14 || heightCm <= 100 || weightKg <= 20 || isNaN(activityMultiplier)) {
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            // Mifflin-St Jeor BMR Equation
+            let bmr;
+            if (gender === 'male') {
+                // BMR = (10 * kg) + (6.25 * cm) - (5 * age) + 5
+                bmr = (10 * weightKg) + (6.25 * heightCm) - (5 * age) + 5;
+            } else {
+                // BMR = (10 * kg) + (6.25 * cm) - (5 * age) - 161
+                bmr = (10 * weightKg) + (6.25 * heightCm) - (5 * age) - 161;
+            }
+
+            // TDEE (Total Daily Energy Expenditure) is BMR * Activity Multiplier
+            const tdee = Math.round(bmr * activityMultiplier);
+
+            // Calorie Goals (using a simple 300 kcal adjustment)
+            const maintenance = tdee;
+            const cutting = tdee - 300; 
+            const bulking = tdee + 300; 
+
+            // Macro Breakdown (based on Maintenance Calories)
+            const proteinCal = maintenance * MACRO_SPLIT.protein;
+            const carbsCal = maintenance * MACRO_SPLIT.carbs;
+            const fatCal = maintenance * MACRO_SPLIT.fat;
+
+            // Convert calories to grams
+            const proteinGrams = Math.round(proteinCal / PROTEIN_CAL_PER_G);
+            const carbsGrams = Math.round(carbsCal / CARB_CAL_PER_G);
+            const fatGrams = Math.round(fatCal / FAT_CAL_PER_G);
+
+            // Update UI
+            document.getElementById('tdee-display').textContent = maintenance.toLocaleString();
+            document.getElementById('cutting-cal').textContent = `${cutting.toLocaleString()} kcal`;
+            document.getElementById('bulking-cal').textContent = `${bulking.toLocaleString()} kcal`;
+
+            document.getElementById('macro-protein').textContent = `${proteinGrams}g`;
+            document.getElementById('macro-carbs').textContent = `${carbsGrams}g`;
+            document.getElementById('macro-fat').textContent = `${fatGrams}g`;
+
+            // Display results
+            formDiv.classList.add('hidden');
+            resultDiv.classList.remove('hidden');
+        }
+        
+        /**
+         * Clears inputs and resets the calculator back to the input form view.
+         */
+        function resetMacro() {
+            // Clear inputs
+            document.getElementById('macro-age').value = '';
+            document.getElementById('macro-height-cm').value = '';
+            document.getElementById('macro-height-ft').value = '';
+            document.getElementById('macro-height-in').value = '';
+            document.getElementById('macro-weight').value = '';
+            
+            // Hide result, show form
+            document.getElementById('macro-result').classList.add('hidden');
+            document.getElementById('macro-input-form').classList.remove('hidden');
+            document.getElementById('macro-error').classList.add('hidden');
+            
+            // Reset selects to first option and update units display
+            document.getElementById('macro-gender').selectedIndex = 0;
+            document.getElementById('macro-activity').selectedIndex = 0;
+            document.getElementById('macro-unit-system').selectedIndex = 0;
+            toggleMacroUnits();
+        }
+
+        // --- Initial setup on page load ---
+        window.onload = () => {
+             // Ensure the initial unit system (Metric) is displayed correctly
+             toggleMacroUnits();
+        }
+    </script>
+</body>
+</html>
+
